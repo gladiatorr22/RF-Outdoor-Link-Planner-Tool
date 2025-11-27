@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { MapContainer, TileLayer } from 'react-leaflet'
+import { Menu } from 'lucide-react'
 import 'leaflet/dist/leaflet.css'
 
 import Sidebar from './components/Sidebar'
@@ -18,6 +19,7 @@ import {
 function App() {
   const [towers, setTowers] = useState([])
   const [links, setLinks] = useState([])
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false)
 
   // Interaction State
   const [interactionMode, setInteractionMode] = useState('view') // 'view', 'add-tower', 'connect'
@@ -35,6 +37,7 @@ function App() {
       setTowers(prev => [...prev, newTower])
       setSelectedItem({ type: 'tower', id: newTower.id })
       setInteractionMode('view')
+      setIsSidebarOpen(true) // Open sidebar to show details of new tower
     } else if (interactionMode === 'view') {
       setSelectedItem(null)
     }
@@ -82,11 +85,13 @@ function App() {
     } else {
       setSelectedItem({ type: 'tower', id: clickedTower.id })
       setInteractionMode('view')
+      setIsSidebarOpen(true) // Open sidebar when selecting a tower
     }
   }
 
   const handleLinkClick = async (link, isNew = false) => {
     setSelectedItem({ type: 'link', id: link.id })
+    setIsSidebarOpen(true) // Open sidebar when selecting a link
 
     if (!link.elevationData || !link.elevationProfile) {
       const sourceTower = towers.find(t => t.id === link.sourceId)
@@ -156,74 +161,91 @@ function App() {
   }
 
   return (
-    <div className="h-screen w-screen flex bg-slate-900 overflow-hidden">
+    <div className="h-screen w-screen flex flex-col bg-slate-900 overflow-hidden">
 
-      <Sidebar
-        towers={towers}
-        links={links}
-        selectedItem={selectedItem}
-        onSelectItem={setSelectedItem}
-        onDelete={handleDelete}
-        onUpdateTower={handleUpdateTower}
-        interactionMode={interactionMode}
-        setInteractionMode={(mode) => {
-          setInteractionMode(mode)
-          setConnectSourceId(null)
-          if (mode !== 'view') setSelectedItem(null)
-        }}
-      />
-
-      <div className="flex-1 relative z-0">
-        <MapContainer
-          center={[51.505, -0.09]}
-          zoom={13}
-          scrollWheelZoom={true}
-          className="h-full w-full"
+      {/* Mobile Header */}
+      <div className="md:hidden h-14 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-4 z-[1002] shrink-0">
+        <h1 className="text-lg font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          RF Link Planner
+        </h1>
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded"
         >
-          <TileLayer
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          />
+          <Menu size={24} />
+        </button>
+      </div>
 
-          <MapEvents
-            interactionMode={interactionMode}
-            onMapClick={handleMapClick}
-          />
+      <div className="flex-1 flex relative overflow-hidden">
+        <Sidebar
+          towers={towers}
+          links={links}
+          selectedItem={selectedItem}
+          onSelectItem={setSelectedItem}
+          onDelete={handleDelete}
+          onUpdateTower={handleUpdateTower}
+          interactionMode={interactionMode}
+          setInteractionMode={(mode) => {
+            setInteractionMode(mode)
+            setConnectSourceId(null)
+            if (mode !== 'view') setSelectedItem(null)
+          }}
+          isOpen={isSidebarOpen}
+          onClose={() => setIsSidebarOpen(false)}
+        />
 
-          {links.map(link => (
-            <LinkLayer
-              key={link.id}
-              link={link}
-              isSelected={selectedItem?.type === 'link' && selectedItem.id === link.id}
-              onClick={() => handleLinkClick(link)}
+        <div className="flex-1 relative z-0">
+          <MapContainer
+            center={[51.505, -0.09]}
+            zoom={13}
+            scrollWheelZoom={true}
+            className="h-full w-full"
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
-          ))}
 
-          {towers.map(tower => (
-            <TowerMarker
-              key={tower.id}
-              tower={tower}
-              isSelected={
-                (selectedItem?.type === 'tower' && selectedItem.id === tower.id) ||
-                (connectSourceId === tower.id)
-              }
-              onTowerClick={handleTowerClick}
+            <MapEvents
+              interactionMode={interactionMode}
+              onMapClick={handleMapClick}
             />
-          ))}
 
-        </MapContainer>
+            {links.map(link => (
+              <LinkLayer
+                key={link.id}
+                link={link}
+                isSelected={selectedItem?.type === 'link' && selectedItem.id === link.id}
+                onClick={() => handleLinkClick(link)}
+              />
+            ))}
 
-        {interactionMode === 'connect' && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] text-sm font-bold animate-pulse">
-            {connectSourceId ? "Select Second Tower" : "Select First Tower"}
-          </div>
-        )}
-        {interactionMode === 'add-tower' && (
-          <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] text-sm font-bold animate-pulse">
-            Click Map to Place Tower
-          </div>
-        )}
+            {towers.map(tower => (
+              <TowerMarker
+                key={tower.id}
+                tower={tower}
+                isSelected={
+                  (selectedItem?.type === 'tower' && selectedItem.id === tower.id) ||
+                  (connectSourceId === tower.id)
+                }
+                onTowerClick={handleTowerClick}
+              />
+            ))}
 
+          </MapContainer>
+
+          {interactionMode === 'connect' && (
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] text-sm font-bold animate-pulse">
+              {connectSourceId ? "Select Second Tower" : "Select First Tower"}
+            </div>
+          )}
+          {interactionMode === 'add-tower' && (
+            <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-blue-600 text-white px-4 py-2 rounded-full shadow-lg z-[1000] text-sm font-bold animate-pulse">
+              Click Map to Place Tower
+            </div>
+          )}
+
+        </div>
       </div>
     </div>
   )

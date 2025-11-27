@@ -1,5 +1,5 @@
 import React from 'react';
-import { Trash2, Radio, Activity, MousePointer2, Plus, Cable } from 'lucide-react';
+import { Trash2, Radio, Activity, MousePointer2, Plus, Cable, X } from 'lucide-react';
 
 const Sidebar = ({
     towers,
@@ -9,7 +9,9 @@ const Sidebar = ({
     onDelete,
     onUpdateTower,
     interactionMode,
-    setInteractionMode
+    setInteractionMode,
+    isOpen,
+    onClose
 }) => {
 
     const renderContent = () => {
@@ -25,12 +27,32 @@ const Sidebar = ({
                     </div>
 
                     {links.length > 0 && (
-                        <div className="mx-4 p-3 bg-slate-800 rounded border border-slate-700 text-left">
-                            <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase">Fresnel Zone</h4>
-                            <p className="text-xs text-slate-300">
-                                Click on a blue link line to see the Fresnel zone.
-                            </p>
-                        </div>
+                        <>
+                            {/* Mobile-only Link List for easier selection */}
+                            <div className="md:hidden px-4 space-y-2">
+                                <p className="text-xs font-bold text-slate-500 uppercase mb-2">Select a Link to View Zone</p>
+                                {links.map((link, index) => (
+                                    <button
+                                        key={link.id}
+                                        onClick={() => onSelectItem({ type: 'link', id: link.id })}
+                                        className="w-full p-3 bg-slate-800 border border-slate-700 rounded flex items-center justify-between hover:bg-slate-700 transition-colors"
+                                    >
+                                        <div className="flex items-center gap-2">
+                                            <Activity size={16} className="text-blue-400" />
+                                            <span className="text-sm font-medium text-slate-200">Link {index + 1}</span>
+                                        </div>
+                                        <span className="text-xs text-slate-500">{(link.distance / 1000).toFixed(2)} km</span>
+                                    </button>
+                                ))}
+                            </div>
+
+                            <div className="mx-4 p-3 bg-slate-800 rounded border border-slate-700 text-left hidden md:block">
+                                <h4 className="text-xs font-bold text-slate-400 mb-2 uppercase">Fresnel Zone</h4>
+                                <p className="text-xs text-slate-300">
+                                    Click on a blue link line to see the Fresnel zone.
+                                </p>
+                            </div>
+                        </>
                     )}
                 </div>
             );
@@ -141,30 +163,42 @@ const Sidebar = ({
     };
 
     return (
-        <div className="w-80 bg-slate-900 border-r border-slate-800 flex flex-col h-full text-white shadow-xl z-[1001]">
-            <div className="p-4 border-b border-slate-800">
+        <div className={`
+            bg-slate-900 border-r border-slate-800 flex flex-col h-full text-white shadow-xl z-[1001]
+            fixed inset-y-0 left-0 w-80 transition-transform duration-300 ease-in-out
+            md:relative md:translate-x-0
+            ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+            <div className="p-4 border-b border-slate-800 flex justify-between items-center">
                 <h1 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
                     RF Link Planner
                 </h1>
+                {/* Close button for mobile */}
+                <button
+                    onClick={onClose}
+                    className="md:hidden text-slate-400 hover:text-white"
+                >
+                    <X size={24} />
+                </button>
             </div>
 
             <div className="p-2 grid grid-cols-3 gap-2 border-b border-slate-800 bg-slate-900/50">
                 <button
-                    onClick={() => setInteractionMode('view')}
+                    onClick={() => { setInteractionMode('view'); if (window.innerWidth < 768) onClose(); }}
                     className={`flex flex-col items-center justify-center p-2 rounded transition-all ${interactionMode === 'view' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                 >
                     <MousePointer2 size={20} />
                     <span className="text-[10px] mt-1 font-medium">Select</span>
                 </button>
                 <button
-                    onClick={() => setInteractionMode('add-tower')}
+                    onClick={() => { setInteractionMode('add-tower'); if (window.innerWidth < 768) onClose(); }}
                     className={`flex flex-col items-center justify-center p-2 rounded transition-all ${interactionMode === 'add-tower' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                 >
                     <Plus size={20} />
                     <span className="text-[10px] mt-1 font-medium">Add Tower</span>
                 </button>
                 <button
-                    onClick={() => setInteractionMode('connect')}
+                    onClick={() => { setInteractionMode('connect'); if (window.innerWidth < 768) onClose(); }}
                     className={`flex flex-col items-center justify-center p-2 rounded transition-all ${interactionMode === 'connect' ? 'bg-blue-600 text-white shadow-lg' : 'bg-slate-800 text-slate-400 hover:bg-slate-700'}`}
                 >
                     <Cable size={20} />
