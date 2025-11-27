@@ -165,7 +165,7 @@ const Sidebar = ({
     return (
         <div className={`
             bg-slate-900 border-r border-slate-800 flex flex-col h-full text-white shadow-xl z-[1001]
-            fixed inset-y-0 left-0 w-80 transition-transform duration-300 ease-in-out
+            absolute inset-y-0 left-0 w-80 transition-transform duration-300 ease-in-out
             md:relative md:translate-x-0
             ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}>

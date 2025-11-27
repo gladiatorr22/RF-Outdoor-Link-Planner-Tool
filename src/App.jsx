@@ -81,6 +81,7 @@ function App() {
         setLinks(prev => [...prev, newLink])
         setConnectSourceId(null)
         setInteractionMode('view')
+        setIsSidebarOpen(true) // Auto-open sidebar so user can see/select the new link
       }
     } else {
       setSelectedItem({ type: 'tower', id: clickedTower.id })
@@ -169,7 +170,7 @@ function App() {
           RF Link Planner
         </h1>
         <button
-          onClick={() => setIsSidebarOpen(true)}
+          onClick={() => setIsSidebarOpen(prev => !prev)}
           className="p-2 text-slate-300 hover:text-white hover:bg-slate-800 rounded"
         >
           <Menu size={24} />
