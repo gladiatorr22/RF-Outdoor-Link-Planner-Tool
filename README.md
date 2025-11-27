@@ -1,4 +1,4 @@
-# RF Link Planner
+# RF Outdoor Link Planner Tool
 
 ## Overview
 The RF Link Planner is a web-based tool for planning and visualizing radio frequency (RF) links. It allows users to place towers on a map, connect them to form links, and analyze the Fresnel zone clearance using elevation data.
