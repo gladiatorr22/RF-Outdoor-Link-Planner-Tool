@@ -200,7 +200,11 @@ function App() {
             center={[51.505, -0.09]}
             zoom={13}
             scrollWheelZoom={true}
-            className="h-full w-full"
+            dragging={true}
+            doubleClickZoom={true}
+            zoomControl={true}
+            className="h-full w-full outline-none"
+            style={{ height: '100%', width: '100%', zIndex: 0 }}
           >
             <TileLayer
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
